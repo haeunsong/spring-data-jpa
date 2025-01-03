@@ -21,11 +21,14 @@ public class Member {
     private Team team;
 
     public Member(String username) {
-        this(username, 0);
+        this.username = username;
     }
     public Member(String username, int age) {
-        this(username, age, null);
+        this.username = username;
+        this.age = age;
     }
+
+    @Builder
     public Member(String username, int age, Team team) {
         this.username = username;
         this.age = age;
