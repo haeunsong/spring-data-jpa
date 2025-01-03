@@ -9,6 +9,7 @@ import study.data_jpa.dto.MemberDto;
 import study.data_jpa.entity.Member;
 import study.data_jpa.entity.Team;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,24 @@ class MemberRepositoryTest {
     @Autowired
     TeamRepository teamRepository;
 
+    @Test
+    public void findByNames() {
+        Member m1 = Member.builder()
+                .username("haeun")
+                .build();
+
+        Member m2 = Member.builder()
+                .username("freedom")
+                .build();
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+
+        List<Member> byNames = memberRepository.findByNames(Arrays.asList("haeun","freedom"));
+        System.out.println("byNames: " + byNames);
+
+    }
     @Test
     public void findMemberDto() {
         Team team = new Team("teamA");

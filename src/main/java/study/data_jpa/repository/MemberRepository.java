@@ -23,4 +23,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select m from Member m where m.username = :username and m.age = :age")
     List<Member> findUser(@Param("username") String username, @Param("age") int age);
 
+    // 이름 기반 파라미터 바인딩
+    @Query("select m from Member m where m.username = :name")
+    Member findMembers(@Param("name") String username);
+
+    // 컬렉션 파라미터 바인딩 - 컬렉션 타입으로 in 절 지원
+    @Query("select m from Member m where m.username in :names")
+    List<Member> findByNames(@Param("names") List<String> names);
+
+
 }
