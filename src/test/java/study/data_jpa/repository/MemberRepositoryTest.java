@@ -1,9 +1,15 @@
 package study.data_jpa.repository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import study.data_jpa.dto.MemberDto;
 import study.data_jpa.entity.Member;
@@ -24,6 +30,71 @@ class MemberRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     TeamRepository teamRepository;
+
+    @PersistenceContext
+    private EntityManager em;
+
+    // EntityGraph 알아보기 : 연관된 엔티티들을 sql 한번에 조회하는 방법
+    // member -> team 은 지연로딩으로 설정되어있기에, getTeam().getName() 을 할때마다
+    // 팀 정보를 얻어오기 위한 쿼리가 한 번 더 실행된다. (N+1문제 발생)
+    @Test
+    public void findMemberLazy() throws Exception {
+        //given
+        //member1 -> teamA
+        //member2 -> teamB
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+        memberRepository.save(new Member("member1", 10, teamA));
+        memberRepository.save(new Member("member2", 20, teamB));
+        em.flush();
+        em.clear();
+//when
+        List<Member> members = memberRepository.findAll();
+//then
+        for (Member member : members) {
+            member.getTeam().getName();
+        }
+    }
+
+    @Test
+    public void paging() throws Exception {
+        // given
+        Team team = new Team("meyame");
+        teamRepository.save(team);
+        Member m = Member.builder()
+                        .username("멤버1")
+                        .age(23)
+                        .team(team)
+                        .build();
+
+        memberRepository.save(m);
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+        // 한 페이지당 3개씩 데이터를 가져온다. 만약 데이터가 10개라면, 총 4페이지.
+
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        // when
+        Page<Member> page = memberRepository.findByAge(age,pageRequest);
+        // 엔티티는 무조건 밖에 노출되면 안된다. 그니까 컨트롤러에서 절대 엔티티를 반환하면 안된다.
+        Page<MemberDto> toMap = page.map(member -> new MemberDto(member.getId(), member.getUsername(),null));
+        System.out.println("toMap = " + toMap);
+
+        // then
+        List<Member> content = page.getContent(); // 조회된 데이터
+        assertThat(content.size()).isEqualTo(3);
+        //assertThat(page.getTotalElements()).isEqualTo(5);
+        assertThat(page.getNumber()).isEqualTo(0);
+        //assertThat(page.getTotalPages()).isEqualTo(2); //전체 페이지 번호
+        assertThat(page.isFirst()).isTrue(); //첫번째 항목인가?
+        assertThat(page.hasNext()).isTrue(); //다음 페이지가 있는가?
+    }
 
     @Test
     public void findByNames() {
