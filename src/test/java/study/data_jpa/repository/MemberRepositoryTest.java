@@ -34,11 +34,35 @@ class MemberRepositoryTest {
     @PersistenceContext
     private EntityManager em;
 
+    @Test
+    public void callCustom() {
+        List<Member> result = memberRepository.findMemberCustom();
+    }
+
+    @Test
+    public void test() throws Exception {
+        Team teamA = new Team("잘한다팀");
+        Team teamB = new Team("승리한다팀");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+        memberRepository.save(new Member("하으니", 23, teamA));
+        memberRepository.save(new Member("짜라니", 20, teamB));
+        em.flush();
+        em.clear();
+
+        //when
+        List<Team> teams = teamRepository.findAll();
+
+        //then
+        for (Team team : teams) {
+           System.out.println("팀 이름 : " + team.getName() + " |멤버 목록 : " + team.getMembers());
+        }
+    }
     // EntityGraph 알아보기 : 연관된 엔티티들을 sql 한번에 조회하는 방법
     // member -> team 은 지연로딩으로 설정되어있기에, getTeam().getName() 을 할때마다
     // 팀 정보를 얻어오기 위한 쿼리가 한 번 더 실행된다. (N+1문제 발생)
     @Test
-    public void findMemberLazy() throws Exception {
+    public void findAll() throws Exception {
         //given
         //member1 -> teamA
         //member2 -> teamB
@@ -50,9 +74,9 @@ class MemberRepositoryTest {
         memberRepository.save(new Member("member2", 20, teamB));
         em.flush();
         em.clear();
-//when
+        //when
         List<Member> members = memberRepository.findAll();
-//then
+        //then
         for (Member member : members) {
             member.getTeam().getName();
         }

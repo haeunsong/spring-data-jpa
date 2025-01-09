@@ -9,13 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.data_jpa.dto.MemberDto;
 import study.data_jpa.entity.Member;
+import study.data_jpa.repository.custom.MemberRepositoryCustom;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
     @Query("select m from Member m where m.username = :username and m.age = :age")
-    List<Member> findByUsername(@Param("username") String username, @Param("age") int age);
+    List<Member> findByUsernameAndAge(@Param("username") String username, @Param("age") int age);
 
     @Query("select m.username from Member m")
     List<String> findUsernameList();
@@ -47,11 +48,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findMemberFetchJoin();
 
     @EntityGraph(attributePaths={"team"})
-    @Query("select m from Member m")
-    List<Member> findMemberEntityGraph();
+    List<Member> findAll();
 
     @EntityGraph(attributePaths = {"team"})
     List<Member> findEntityGraphByUsername(@Param("username") String username);
+
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findByUsername(@Param("username") String username);
 
 
 }
