@@ -3,6 +3,7 @@ package study.data_jpa.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,5 +45,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // fetch join
     @Query("select m from Member m left join fetch m.team")
     List<Member> findMemberFetchJoin();
+
+    @EntityGraph(attributePaths={"team"})
+    @Query("select m from Member m")
+    List<Member> findMemberEntityGraph();
+
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findEntityGraphByUsername(@Param("username") String username);
+
 
 }
