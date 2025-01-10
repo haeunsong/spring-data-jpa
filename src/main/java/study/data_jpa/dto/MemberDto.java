@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import study.data_jpa.entity.Member;
 
 @NoArgsConstructor
 @Getter
@@ -19,4 +20,9 @@ public class MemberDto {
         this.teamName = teamName;
     }
 
+    public MemberDto(Member member) {
+        this.id = member.getId();
+        this.username = member.getUsername();
+        this.teamName = member.getTeam().getName();
+    }
 }
